@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloom Finance Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #2563EB; --green: #16A34A; --amber: #D97706;
+      --red: #DC2626; --purple: #7C3AED; --indigo: #4F46E5;
+      --navy: #0F172A; --bg: #EEF2F7; --card: #fff;
+      --text: #111827; --muted: #6B7280; --faint: #9CA3AF;
+      --border: #F3F4F6;
+    }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+    /* âââ Header âââ */
+    .header {
+      background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%);
+      padding: 0 32px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
+    .header-inner {
+      max-width: 1400px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-icon { font-size: 28px; }
+    .brand-sub  { font-size: 11px; font-weight: 600; color: #64748B; letter-spacing: .1em; text-transform: uppercase; }
+    .brand-name { font-size: 20px; font-weight: 800; color: #F8FAFC; letter-spacing: -.02em; margin-top: 2px; }
+    .header-meta { text-align: right; }
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.3);
+      border-radius: 20px; padding: 4px 12px; margin-bottom: 6px;
+    }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #22C55E; }
+    .live-text { font-size: 11px; font-weight: 600; color: #86EFAC; letter-spacing: .05em; }
+    .meta-date    { font-size: 12px; color: #94A3B8; }
+    .meta-refresh { font-size: 11px; color: #475569; margin-top: 2px; }
+
+    /* âââ Alert Banner âââ */
+    .alert-banner {
+      background: linear-gradient(90deg, #7F1D1D, #991B1B);
+      border-bottom: 2px solid #DC2626;
+    }
+    .alert-inner {
+      max-width: 1400px; margin: 0 auto; padding: 12px 32px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .alert-icon { font-size: 18px; flex-shrink: 0; }
+    .alert-text { flex: 1; font-size: 13px; color: #FECACA; }
+    .alert-text strong { color: #FCA5A5; }
+    .alert-pill {
+      background: #DC2626; color: #fff;
+      font-size: 12px; font-weight: 800;
+      padding: 6px 16px; border-radius: 20px; flex-shrink: 0;
+      letter-spacing: .02em;
+    }
+
+    /* âââ Container âââ */
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px 32px 48px; }
+
+    /* âââ KPI Row âââ */
+    .kpi-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+    .kpi-card {
+      background: var(--card); border-radius: 12px;
+      padding: 18px 20px; flex: 1 1 160px;
+      border-top: 4px solid var(--c);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .kpi-icon  { font-size: 20px; margin-bottom: 2px; }
+    .kpi-value { font-size: 22px; font-weight: 800; color: var(--c); line-height: 1.1; }
+    .kpi-label { font-size: 12px; font-weight: 600; color: #374151; }
+    .kpi-sub   { font-size: 11px; color: var(--faint); margin-top: 1px; }
+
+    /* âââ Context Strip âââ */
+    .context-strip {
+      background: linear-gradient(135deg, #1E3A5F, #1E40AF);
+      border-radius: 12px; padding: 12px 0; margin-bottom: 18px;
+      display: flex; flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(30,58,95,.3);
+    }
+    .context-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 24px; flex: 1 1 200px;
+      border-left: 1px solid rgba(255,255,255,.12);
+    }
+    .context-item:first-child { border-left: none; }
+    .context-item .ci-icon { font-size: 16px; flex-shrink: 0; }
+    .context-item .ci-text { font-size: 12px; color: #BFDBFE; }
+    .context-item .ci-text strong { color: #fff; }
+
+    /* âââ Grid âââ */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .grid-3-1 { display: grid; grid-template-columns: 1fr 2fr; gap: 18px; margin-bottom: 18px; }
+    .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; margin-bottom: 18px; }
+
+    /* âââ Card âââ */
+    .card {
+      background: var(--card); border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .card-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
+    .card-badge {
+      font-size: 11px; font-weight: 600; padding: 3px 10px;
+      background: #F1F5F9; color: #64748B; border-radius: 20px;
+    }
+
+    /* âââ Total Row âââ */
+    .total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px; border-radius: 8px; margin-bottom: 12px;
+    }
+    .total-label { font-size: 12px; font-weight: 500; }
+    .total-value { font-size: 16px; font-weight: 800; }
+    .total-green { background: #F0FDF4; }
+    .total-green .total-label { color: #166534; }
+    .total-green .total-value { color: var(--green); }
+    .total-red   { background: #FEF2F2; }
+    .total-red   .total-label { color: #991B1B; }
+    .total-red   .total-value { color: var(--red); }
+
+    /* âââ Payment Row âââ */
+    .pay-row { display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .pay-row.urgent { border-left: 3px solid var(--red); padding-left: 10px; }
+    .pay-row:last-child { border-bottom: none; }
+    .pay-main { flex: 1; min-width: 0; }
+    .pay-name   { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .pay-detail { font-size: 12px; color: var(--muted); }
+    .pay-note   { font-size: 11px; color: var(--faint); font-style: italic; margin-top: 3px; }
+    .pay-right  { text-align: right; flex-shrink: 0; }
+    .pay-amount { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .pay-amount.in  { color: var(--green); }
+    .pay-amount.out { color: var(--red); }
+    .pay-status {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px; letter-spacing: .04em;
+      margin-bottom: 3px;
+    }
+    .pay-due  { font-size: 11px; color: var(--faint); }
+    .pay-days { font-size: 11px; font-weight: 700; margin-top: 2px; }
+
+    /* âââ Chart âââ */
+    .chart-area {
+      display: flex; gap: 50px; justify-content: center;
+      padding: 20px 40px 0; align-items: flex-end;
+    }
+    .month-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .bar-group { display: flex; align-items: flex-end; gap: 5px; height: 200px; }
+    .bar { border-radius: 4px 4px 0 0; transition: opacity .2s; cursor: default; min-height: 3px; }
+    .bar:hover { opacity: .8; }
+    .bar-label { font-size: 13px; font-weight: 600; color: #374151; }
+    .bar-net   { font-size: 12px; font-weight: 700; }
+    .bar-rev   { font-size: 11px; color: var(--faint); }
+    .chart-legend {
+      display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+      margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    .legend-dot  { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    /* âââ Timeline âââ */
+    .timeline-wrap { margin: 0 0 18px; }
+    .timeline-bar { position: relative; height: 6px; background: #E2E8F0; border-radius: 3px; margin: 28px 0 24px; }
+    .timeline-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--red), var(--amber)); }
+    .timeline-pin {
+      position: absolute; top: -22px;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .timeline-pin-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--card); box-shadow: 0 0 0 2px; }
+    .timeline-pin-label { font-size: 10px; font-weight: 700; white-space: nowrap; margin-top: -2px; }
+    .timeline-pin-amount { font-size: 11px; font-weight: 600; position: absolute; top: 16px; white-space: nowrap; }
+    .timeline-today {
+      position: absolute; top: -8px; left: 0;
+      font-size: 10px; font-weight: 700; color: var(--navy);
+      white-space: nowrap;
+    }
+    .timeline-end {
+      position: absolute; top: -8px; right: 0;
+      font-size: 10px; color: var(--faint); white-space: nowrap;
+    }
+
+    /* âââ Stripe âââ */
+    .stripe-stats { display: flex; margin-bottom: 14px; }
+    .stripe-stat  { flex: 1; text-align: center; padding: 14px 0; }
+    .stripe-stat + .stripe-stat { border-left: 1px solid var(--border); }
+    .stripe-amount { font-size: 22px; font-weight: 800; }
+    .stripe-label  { font-size: 12px; color: var(--faint); margin-top: 3px; }
+    .stripe-alert  { background: #FEF3C7; border-radius: 8px; padding: 10px 12px; }
+    .stripe-alert-title { font-size: 12px; font-weight: 700; color: #92400E; margin-bottom: 6px; }
+    .stripe-inv-name   { font-size: 14px; font-weight: 700; }
+    .stripe-inv-email  { font-size: 12px; color: var(--muted); }
+    .stripe-inv-amount { font-size: 15px; font-weight: 800; color: var(--red); margin-top: 4px; }
+    .stripe-inv-note   { font-size: 11px; color: #92400E; margin-top: 2px; }
+
+    /* âââ Files âââ */
+    .file-row {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .file-row:last-child { border-bottom: none; }
+    .file-badge {
+      flex-shrink: 0; margin-top: 2px;
+      font-size: 10px; font-weight: 700;
+      padding: 3px 8px; border-radius: 20px;
+    }
+    .file-badge.missing { background: #FEE2E2; color: var(--red); }
+    .file-badge.due     { background: #FEF3C7; color: var(--amber); }
+    .file-name  { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .file-dest  { font-size: 12px; color: var(--muted); }
+    .file-note  { font-size: 11px; color: var(--faint); font-style: italic; margin-top: 2px; }
+
+    /* âââ Expense Bars âââ */
+    .exp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 40px; }
+    .exp-item { margin-bottom: 10px; }
+    .exp-label-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .exp-label  { font-size: 12px; color: #374151; font-weight: 500; }
+    .exp-nums   { font-size: 12px; color: var(--muted); }
+    .exp-track  { height: 6px; border-radius: 3px; background: #F1F5F9; overflow: hidden; }
+    .exp-bar    { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #2563EB, #60A5FA); }
+
+    /* âââ Footer âââ */
+    .footer {
+      background: #1E293B; border-top: 1px solid #334155;
+      padding: 16px 32px;
+    }
+    .footer-inner {
+      max-width: 1400px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+    }
+    .footer-left  { font-size: 12px; color: #64748B; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+    .footer-right { font-size: 12px; color: #475569; }
+    .footer-brand { color: #94A3B8; font-weight: 600; }
+
+    @media (max-width: 900px) {
+      .grid-2, .grid-3-1, .grid-2-1 { grid-template-columns: 1fr; }
+      .kpi-row { flex-direction: column; }
+      .chart-area { gap: 20px; padding: 10px; }
+      .container { padding: 16px; }
+      .header-inner { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .exp-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- âââ Header âââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-icon">ð¿</span>
+      <div>
+        <div class="brand-sub">Bloom Outdoor Furniture</div>
+        <div class="brand-name">Financial Dashboard</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="live-badge"><span class="live-dot"></span><span class="live-text">LIVE DATA</span></div>
+      <div class="meta-date">Last updated: Sunday, 29 March 2026 â 9:00 AM</div>
+      <div class="meta-refresh">Auto-refreshes at 9 AM Â· 1 PM Â· 5 PM Â· 9 PM (UAE time)</div>
+    </div>
+  </div>
+</header>
+
+<!-- âââ Alert Banner âââââââââââââââââââââââââââââââââââââââââââââââ -->
+<div class="alert-banner">
+  <div class="alert-inner">
+    <span class="alert-icon">â ï¸</span>
+    <div class="alert-text">
+      <strong>URGENT â 21 days remaining:</strong>
+      RAKBank STL repayment of AED 80,000 is due <strong>April 20, 2026</strong>.
+      This is your most critical near-term cash obligation â ensure funds are ready.
+    </div>
+    <div class="alert-pill">AED 80,000 Â· DUE APR 20</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- âââ KPI Row âââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+  <div class="kpi-row">
+    <div class="kpi-card" style="--c: #2563EB">
+      <div class="kpi-icon">ð°</div>
+      <div class="kpi-value">AED 1.25M</div>
+      <div class="kpi-label">YTD Revenue</div>
+      <div class="kpi-sub">JanâMar 29, 2026</div>
+    </div>
+    <div class="kpi-card" style="--c: #16A34A">
+      <div class="kpi-icon">ð</div>
+      <div class="kpi-value">AED 290K</div>
+      <div class="kpi-label">YTD Net Income</div>
+      <div class="kpi-sub">After all costs Â· YTD positive â</div>
+    </div>
+    <div class="kpi-card" style="--c: #7C3AED">
+      <div class="kpi-icon">ð</div>
+      <div class="kpi-value">58.1%</div>
+      <div class="kpi-label">Gross Margin</div>
+      <div class="kpi-sub">Revenue after product costs</div>
+    </div>
+    <div class="kpi-card" style="--c: #D97706">
+      <div class="kpi-icon">ð¥</div>
+      <div class="kpi-value">50â75K/mo</div>
+      <div class="kpi-label">Monthly Burn Rate</div>
+      <div class="kpi-sub">â Reduced from 75â100K (AED 25K saved)</div>
+    </div>
+    <div class="kpi-card" style="--c: #6366F1">
+      <div class="kpi-icon">ð³</div>
+      <div class="kpi-value">AED 1,747</div>
+      <div class="kpi-label">Stripe Balance (Pending)</div>
+      <div class="kpi-sub">AED 0 available Â· 1 open invoice</div>
+    </div>
+  </div>
+
+  <!-- âââ Context Strip âââââââââââââââââââââââââââââââââââââââââââââ -->
+  <div class="context-strip">
+    <div class="context-item">
+      <span class="ci-icon">ð</span>
+      <span class="ci-text"><strong>AED 1.3M delivery payment</strong> expected ~May 16 â will restore your cash position significantly</span>
+    </div>
+    <div class="context-item">
+      <span class="ci-icon">ð </span>
+      <span class="ci-text"><strong>Rent deferred 8 weeks</strong> from April 1 â not due until ~May 27, 2026</span>
+    </div>
+    <div class="context-item">
+      <span class="ci-icon">ð</span>
+      <span class="ci-text"><strong>Low March sales</strong> = regional conflict impact, not a bookkeeping error â deliveries resume May</span>
+    </div>
+  </div>
+
+  <!-- âââ Key Dates Timeline ââââââââââââââââââââââââââââââââââââââââ -->
+  <div class="card timeline-wrap" style="margin-bottom: 18px;">
+    <div class="card-header">
+      <span class="card-dot" style="background:#2563EB"></span>
+      <h2 class="card-title">ð Key Dates â Next 60 Days</h2>
+    </div>
+    <div style="position:relative; padding: 0 8px;">
+      <div class="timeline-today">Today<br>Mar 30</div>
+      <div class="timeline-end">+60 days<br>May 29</div>
+      <div class="timeline-bar">
+        <div class="timeline-fill" style="width: 35%"></div>
+        <!-- Apr 20 pin: 21/60 = 35% -->
+        <div class="timeline-pin" style="left: 35%">
+          <span class="timeline-pin-dot" style="background:#DC2626; box-shadow-color:#DC2626;border-color:white; box-shadow: 0 0 0 2px #DC2626;"></span>
+          <span class="timeline-pin-label" style="color:#DC2626">APR 20</span>
+          <span class="timeline-pin-amount" style="color:#DC2626;">â ï¸ STL Loan<br>AED 80,000</span>
+        </div>
+        <!-- May 16 pin: 47/60 = 78% -->
+        <div class="timeline-pin" style="left: 78%">
+          <span class="timeline-pin-dot" style="background:#16A34A; box-shadow: 0 0 0 2px #16A34A;"></span>
+          <span class="timeline-pin-label" style="color:#16A34A">MAY 16</span>
+          <span class="timeline-pin-amount" style="color:#16A34A;">ð Delivery<br>AED 1.3M</span>
+        </div>
+        <!-- May 27 pin: 58/60 = 97% -->
+        <div class="timeline-pin" style="left: 93%">
+          <span class="timeline-pin-dot" style="background:#6366F1; box-shadow: 0 0 0 2px #6366F1;"></span>
+          <span class="timeline-pin-label" style="color:#6366F1">MAY 27</span>
+          <span class="timeline-pin-amount" style="color:#6366F1;">ð  Rent<br>Due</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- âââ Money In / Money Out âââââââââââââââââââââââââââââââââââââââ -->
+  <div class="grid-2">
+
+    <!-- Incoming -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-dot" style="background:#16A34A"></span>
+        <h2 class="card-title">ð Money Coming In</h2>
+        <span class="card-badge">3 items</span>
+      </div>
+      <div class="total-row total-green">
+        <span class="total-label">Total Expected</span>
+        <span class="total-value">AED 1.83M</span>
+      </div>
+
+      <div class="pay-row urgent">
+        <div class="pay-main">
+          <div class="pay-name">Simone Assomull</div>
+          <div class="pay-detail">Stripe subscription â payment method failed, awaiting retry</div>
+          <div class="pay-note">Contact customer to update payment details</div>
+        </div>
+        <div class="pay-right">
+          <div class="pay-amount in">AED 2,800</div>
+          <div class="pay-status" style="background:#FEE2E2;color:#DC2626">OVERDUE</div>
+          <div class="pay-due">Via Stripe</div>
+        </div>
+      </div>
+
+      <div class="pay-row">
+        <div class="pay-main">
+          <div class="pay-name">Accounts Receivable (QuickBooks)</div>
+          <div class="pay-detail">Outstanding client invoices â multiple clients</div>
+        </div>
+        <div class="pay-right">
+          <div class="pay-amount in">~AED 531K</div>
+          <div class="pay-status" style="background:#FEF3C7;color:#D97706">PENDING</div>
+          <div class="pay-due">Bank Transfer Â· Various dates</div>
+        </div>
+      </div>
+
+      <div class="pay-row">
+        <div class="pay-main">
+          <div class="pay-name">Pending Delivery Payment</div>
+          <div class="pay-detail">AED 1.3M order â payment received on delivery</div>
+          <div class="pay-note">Largest single inflow â restores cash position</div>
+        </div>
+        <div class="pay-right">
+          <div class="pay-amount in">AED 1.3M</div>
+          <div class="pay-status" style="background:#DBEAFE;color:#2563EB">EXPECTED</div>
+          <div class="pay-due">~May 16, 2026</div>
+          <div class="pay-days" style="color:#2563EB">47 days</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outgoing -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-dot" style="background:#DC2626"></span>
+        <h2 class="card-title">ð´ Money Going Out</h2>
+        <span class="card-badge">5 items</span>
+      </div>
+      <div class="total-row total-red">
+        <span class="total-label">Total Obligations (known)</span>
+        <span class="total-value">AED 1.04M+</span>
+      </div>
+
+      <div class="pay-row urgent">
+        <div class="pay-main">
+          <div class="pay-name">RAKBank STL Repayment</div>
+          <div class="pay-detail">Short-term loan facility â CRITICAL: must pay by deadline</div>
+        </div>
+        <div class="pay-right">
+          <div class="pay-amount out">AED 80,000</div>
+          <div class="pay-status" style="background:#FEE2E2;color:#DC2626">DUE APR 20</div>
+          <div class="pay-days" style="color:#DC2626">â¡ 21 days left</div>
+        </div>
+      </div>
+
+      <div class="pay-row">
+        <div class="pay-main">
+          <div class="pay-name">Supplier Invoices (USD)</div>
+          <div class="pay-detail">Outstanding AP â overseas furniture suppliers</div>
+        </div>
+        <div class="pay-right">
+          <div class="pay-amount out">~AED 787K+</div>
+          <div class="pay-status" style="background:#FEF3C7;color:#D97706">PENDING</div>
+          <div class="pay-due">Various dates</div>
+        </div>
+      </div>
+
+      <div class="pay-row">
+        <div class="pay-main">
+          <div class="pay-name">Rent (Deferred)</div>
+          <div class="pay-detail">April rent deferred 8 weeks from April 1</div>
+        </div>
+        <div class="pay-right">
+          <div class="pay-amount out">â</div>
+          <div class="pay-status" style="background:#EDE9FE;color:#6366F1">DUE ~MAY 27</div>
+          <div class="pay-days" style="color:#6366F1">58 days</div>
+        </div>
+      </div>
+
+      <div class="pay-row">
+        <div class="pay-main">
+          <div class="pay-name">Vehicle Loan Repayments</div>
+          <div class="pay-detail">2 auto loans â quarterly schedule</div>
+        </div>
+        <div class="pay-right">
+          <div class="pay-amount out">AED 11,000</div>
+          <div class="pay-status" style="background:#F1F5F9;color:#64748B">QUARTERLY</div>
+        </div>
+      </div>
+
+      <div class="pay-row">
+        <div class="pay-main">
+          <div class="pay-name">Monthly Operating Costs</div>
+          <div class="pay-detail">Wages, insurance, utilities, subscriptions</div>
+          <div class="pay-note">Reduced from AED 75â100K to AED 50â75K (AED 25K monthly saving)</div>
+        </div>
+        <div class="pay-right">
+          <div class="pay-amount out">~AED 63K</div>
+          <div class="pay-status" style="background:#F1F5F9;color:#64748B">MONTHLY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- âââ Monthly P&L Chart ââââââââââââââââââââââââââââââââââââââââââ -->
+  <div class="card" style="margin-bottom: 18px;">
+    <div class="card-header">
+      <span class="card-dot" style="background:#2563EB"></span>
+      <h2 class="card-title">ð Monthly Performance â 2026</h2>
+    </div>
+    <div class="chart-area">
+      <!-- Jan: Rev 378K, Costs 477K, Net -99K -->
+      <div class="month-group">
+        <div class="bar-group">
+          <div class="bar" style="width:36px;height:90px;background:#2563EB" title="Revenue: AED 378,009"></div>
+          <div class="bar" style="width:36px;height:113px;background:#94A3B8" title="Total Costs: AED 477,542"></div>
+          <div class="bar" style="width:36px;height:24px;background:#DC2626" title="Net Loss: AED 99,533"></div>
+        </div>
+        <div class="bar-label">Jan</div>
+        <div class="bar-net" style="color:#DC2626">âAED 99.5K</div>
+        <div class="bar-rev">Rev: AED 378K</div>
+      </div>
+
+      <!-- Feb: Rev 757K, Costs 271K, Net +466K -->
+      <div class="month-group">
+        <div class="bar-group">
+          <div class="bar" style="width:36px;height:180px;background:#2563EB" title="Revenue: AED 756,957"></div>
+          <div class="bar" style="width:36px;height:65px;background:#94A3B8" title="Total Costs: AED 271,463"></div>
+          <div class="bar" style="width:36px;height:111px;background:#16A34A" title="Net Income: AED 465,744"></div>
+        </div>
+        <div class="bar-label">Feb</div>
+        <div class="bar-net" style="color:#16A34A">+AED 465.7K</div>
+        <div class="bar-rev">Rev: AED 757K</div>
+      </div>
+
+      <!-- Mar: Rev 110.6K, Costs 30.2K, Net +97K (partial) -->
+      <div class="month-group">
+        <div class="bar-group">
+          <div class="bar" style="width:36px;height:26px;background:#2563EB;opacity:.8" title="Revenue: AED 110,600 (partial to Mar 29)"></div>
+          <div class="bar" style="width:36px;height:7px;background:#94A3B8;opacity:.8" title="Total Costs: AED 30,210"></div>
+          <div class="bar" style="width:36px;height:23px;background:#16A34A;opacity:.8" title="Net Income: AED 97,092 (partial)"></div>
+        </div>
+        <div class="bar-label">Mar*</div>
+        <div class="bar-net" style="color:#16A34A">+AED 97.1K</div>
+        <div class="bar-rev">Rev: AED 110K</div>
+      </div>
+    </div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#2563EB"></span>Revenue</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#94A3B8"></span>Total Costs (COGS + Expenses)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#16A34A"></span>Net Profit</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#DC2626"></span>Net Loss</span>
+      <span class="legend-item" style="color:#9CA3AF;font-style:italic;font-size:11px">* March partial to Mar 29</span>
+    </div>
+  </div>
+
+  <!-- âââ Stripe + Files âââââââââââââââââââââââââââââââââââââââââââââ -->
+  <div class="grid-3-1">
+
+    <!-- Files to Upload -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-dot" style="background:#D97706"></span>
+        <h2 class="card-title">ð Files to Upload â Action Required</h2>
+        <span class="card-badge">3 pending</span>
+      </div>
+
+      <div class="file-row">
+        <span class="file-badge missing">â MISSING</span>
+        <div>
+          <div class="file-name">March 2026 outgoing invoices</div>
+          <div class="file-dest">â Google Drive: Bloom Outdoor LLC â March 2026</div>
+          <div class="file-note">Folder exists but no files uploaded yet â hover PDF in Gmail â Drive icon</div>
+        </div>
+      </div>
+
+      <div class="file-row">
+        <span class="file-badge missing">â MISSING</span>
+        <div>
+          <div class="file-name">RAKBank statements â February & March 2026</div>
+          <div class="file-dest">â Google Drive: RAKBank Incoming payments</div>
+          <div class="file-note">Last upload was January 27 â over 2 months overdue</div>
+        </div>
+  2   </div>
+
+      <div class="file-row">
+        <span class="file-badge due">â³ DUE</span>
+        <div>
+          <div class="file-name">Wio Bank CSV â current week</div>
+          <div class="file-dest">â Drop directly in chat with AI Accountant</div>
+          <div class="file-note">Weekly import â runs every Friday at 9 AM</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stripe -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-dot" style="background:#6366F1"></span>
+        <h2 class="card-title">ð³ Stripe</h2>
+      </div>
+      <div class="stripe-stats">
+        <div class="stripe-stat">
+          <div class="stripe-amount" style="color:#16A34A">AED 0</div>
+          <div class="stripe-label">Available</div>
+        </div>
+        <div class="stripe-stat">
+          <div class="stripe-amount" style="color:#D97706">AED 1,747</div>
+          <div class="stripe-label">Pending</div>
+        </div>
+      </div>
+      <div class="stripe-alert">
+        <div class="stripe-alert-title">â ï¸ Open Invoice</div>
+        <div class="stripe-inv-name">Simone Assomull</div>
+        <div class="stripe-inv-email">simone.assomull@gmail.com</div>
+        <div class="stripe-inv-amount">AED 2,800</div>
+        <div class="stripe-inv-note">Payment method failed â needs update</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- âââ YTD Expense Breakdown âââââââââââââââââââââââââââââââââââââââ -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-dot" style="background:#7C3AED"></span>
+      <h2 class="card-title">ð YTD Expense Breakdown â Jan to Mar 29, 2026</h2>
+      <span class="card-badge">AED 424K total</span>
+    </div>
+    <div class="exp-grid">
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Wages</span>
+          <span class="exp-nums">AED 139.8K Â· 33%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:33%"></div></div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Rent / Lease</span>
+          <span class="exp-nums">AED 58.0K Â· 14%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:14%"></div></div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Management Compensation</span>
+          <span class="exp-nums">AED 56.5K Â· 13%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:13%"></div></div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Advertising</span>
+          <span class="exp-nums">AED 33.6K Â· 8%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:8%"></div></div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Legal &amp; Professional Fees</span>
+          <span class="exp-nums">AED 28.9K Â· 7%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:7%"></div></div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Bank Charges</span>
+          <span class="exp-nums">AED 19.1K Â· 5%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:5%"></div></div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Showroom / Expo Costs</span>
+          <span class="exp-nums">AED 15.8K Â· 4%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:4%"></div></div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Interest Expense</span>
+          <span class="exp-nums">AED 14.1K Â· 3%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:3%"></div></div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Other G&amp;A</span>
+          <span class="exp-nums">AED 14.5K Â· 3%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:3%"></div></div>
+      </div>
+      <div class="exp-item">
+        <div class="exp-label-row">
+          <span class="exp-label">Vehicle Costs</span>
+          <span class="exp-nums">AED 10.7K Â· 3%</span>
+        </div>
+        <div class="exp-track"><div class="exp-bar" style="width:3%"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- âââ Footer âââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <span>ð¿ <span class="footer-brand">Bloom AI Accountant</span></span>
+      <span>Â·</span>
+      <span>Data: QuickBooks Â· Stripe Â· Google Drive</span>
+      <span>Â·</span>
+      <span>Refreshes: 9 AM Â· 1 PM Â· 5 PM Â· 9 PM UAE</span>
+    </div>
+    <div class="footer-right">Snapshot: 29 March 2026 Â· 9:00 AM UAE</div>
+  </div>
+</footer>
+
+</body>
+</html>
